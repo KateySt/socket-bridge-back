@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: user
+  datasource:
+    username: root
+    url: jdbc:postgresql://localhost:5432/db
+    password: 123456789
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+server:
+  port: 8081
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+keycloak:
+  url: http://localhost:9090
+  realm:
+  admin-username:
+  admin-password:
+  admin-client-id:
+  user-client-id:
+  client-secret:
+frontend:
+  home-url: http://localhost:3000/home
+base-url: http://localhost:8080
