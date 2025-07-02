@@ -16,6 +16,13 @@ spring:
                 - Path=/api/**
               filters:
                 - StripPrefix=1
+
+            - id: company
+              uri: lb://COMPANY
+              predicates:
+                - Path=/api/**
+              filters:
+                - StripPrefix=1
   security:
     oauth2:
       resourceserver:

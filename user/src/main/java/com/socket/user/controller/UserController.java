@@ -2,6 +2,7 @@ package com.socket.user.controller;
 
 import com.socket.user.dto.LoginRequest;
 import com.socket.user.dto.RegisterRequest;
+import com.socket.user.dto.UpdateRequest;
 import com.socket.user.service.KeycloakService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,11 +28,16 @@ public class UserController {
     @Value("${base-url}")
     private String urlBase;
 
+    @GetMapping("/users")
+    public ResponseEntity<?> getAllUsers() {
+        return keycloakService.getAllUsers();
+    }
+
     @GetMapping("/exchange-code")
     public ResponseEntity<?> exchangeCodeForToken(
             @RequestParam("code") String code) {
 
-        Map<String, Object> tokenResponse = keycloakService.exchangeCodeForToken(code, urlBase+"/user/api/exchange-code");
+        Map<String, Object> tokenResponse = keycloakService.exchangeCodeForToken(code, urlBase + "/user/api/exchange-code");
         if (tokenResponse == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to get token");
         }
@@ -74,7 +80,7 @@ public class UserController {
     }
 
     @PutMapping("/user/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable String id, @RequestBody RegisterRequest update) {
+    public ResponseEntity<?> updateUser(@PathVariable String id, @RequestBody UpdateRequest update) {
         return keycloakService.updateUser(id, update);
     }
 

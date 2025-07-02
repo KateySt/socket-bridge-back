@@ -25,6 +25,7 @@
 		<module>user</module>
 		<module>eureka-server</module>
         <module>gateway</module>
+        <module>company</module>
     </modules>
 	<scm>
 		<connection/>

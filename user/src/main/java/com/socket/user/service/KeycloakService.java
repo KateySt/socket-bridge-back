@@ -2,9 +2,7 @@ package com.socket.user.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.socket.user.dto.KeycloakProperties;
-import com.socket.user.dto.LoginRequest;
-import com.socket.user.dto.RegisterRequest;
+import com.socket.user.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -22,11 +20,27 @@ public class KeycloakService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final KeycloakProperties properties;
 
-    public ResponseEntity<?> registerAndLogin(RegisterRequest req) {
-        if (isInvalid(req)) {
-            return badRequest("Username and password must be provided");
-        }
+    public ResponseEntity<?> getAllUsers() {
+        String adminToken = getAdminAccessToken();
+        if (adminToken == null) return internalError("Failed to get admin token");
 
+        String url = buildUrl("/admin/realms/" + properties.realm() + "/users");
+
+        HttpHeaders headers = jsonHeaders();
+        headers.setBearerAuth(adminToken);
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<List> response = restTemplate.exchange(url, HttpMethod.GET, request, List.class);
+            return ResponseEntity.ok(response.getBody());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return internalError("Failed to get user list");
+        }
+    }
+
+    public ResponseEntity<?> registerAndLogin(RegisterRequest req) {
         return tryOrError(() -> {
             String adminToken = getAdminAccessToken();
             if (adminToken == null) return internalError("Failed to get admin token");
@@ -39,10 +53,6 @@ public class KeycloakService {
 
             return ResponseEntity.ok(userTokens);
         });
-    }
-
-    private boolean isInvalid(RegisterRequest req) {
-        return req.username() == null || req.password() == null;
     }
 
     private String getAdminAccessToken() {
@@ -92,9 +102,16 @@ public class KeycloakService {
                   ]
                 }
                 """, user.username(), user.firstName(), user.lastName(), user.email(), user.password());
-
         HttpEntity<String> request = new HttpEntity<>(json, headers);
-        return postForStatus(url, request);
+        ResponseEntity<Void> response = restTemplate.postForEntity(url, request, Void.class);
+
+        if (!response.getStatusCode().is2xxSuccessful()) return false;
+
+        String location = response.getHeaders().getFirst("Location");
+        if (location == null) return false;
+
+        String userId = location.substring(location.lastIndexOf("/") + 1);
+        return assignRoleToUser(token, userId, Role.USER);
     }
 
     public ResponseEntity<?> login(LoginRequest request) {
@@ -138,7 +155,7 @@ public class KeycloakService {
         }
     }
 
-    public ResponseEntity<?> updateUser(String userId, RegisterRequest updateData) {
+    public ResponseEntity<?> updateUser(String userId, UpdateRequest updateData) {
         String adminToken = getAdminAccessToken();
         if (adminToken == null) return internalError("Failed to get admin token");
 
@@ -150,11 +167,9 @@ public class KeycloakService {
         String json = String.format("""
                 {
                   "firstName": "%s",
-                  "lastName": "%s",
-                  "email": "%s",
-                  "enabled": true
+                  "lastName": "%s"
                 }
-                """, updateData.firstName(), updateData.lastName(), updateData.email());
+                """, updateData.firstName(), updateData.lastName());
 
         HttpEntity<String> request = new HttpEntity<>(json, headers);
 
@@ -207,6 +222,30 @@ public class KeycloakService {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    private boolean assignRoleToUser(String token, String userId, Role role) {
+        String realm = properties.realm();
+
+        String roleUrl = buildUrl("/admin/realms/" + realm + "/roles/" + role.name());
+        HttpHeaders headers = jsonHeaders();
+        headers.setBearerAuth(token);
+
+        ResponseEntity<Map> roleResponse = restTemplate.exchange(roleUrl, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
+        if (!roleResponse.getStatusCode().is2xxSuccessful() || roleResponse.getBody() == null) return false;
+
+        Map<String, Object> roleRepresentation = roleResponse.getBody();
+
+        String assignUrl = buildUrl("/admin/realms/" + realm + "/users/" + userId + "/role-mappings/realm");
+        HttpEntity<List<Map<String, Object>>> assignRequest = new HttpEntity<>(List.of(roleRepresentation), headers);
+
+        try {
+            restTemplate.postForEntity(assignUrl, assignRequest, Void.class);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
