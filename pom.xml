@@ -26,7 +26,8 @@
 		<module>eureka-server</module>
         <module>gateway</module>
         <module>company</module>
-    </modules>
+		<module>quizzes</module>
+	</modules>
 	<scm>
 		<connection/>
 		<developerConnection/>

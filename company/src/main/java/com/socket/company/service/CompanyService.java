@@ -6,6 +6,7 @@ import com.socket.company.repo.CompanyRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
@@ -15,10 +16,12 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class CompanyService {
-
+    private final RestTemplate restTemplate;
     private final CompanyRepository companyRepository;
 
     public Company createCompany(CreateCompany company, String ownerId) {
+        assignOwnerRole(ownerId);
+
         var createCompany = Company.builder()
                 .name(company.name())
                 .ownerId(ownerId)
@@ -28,6 +31,11 @@ public class CompanyService {
                 .updatedAt(LocalDateTime.now())
                 .build();
         return companyRepository.save(createCompany);
+    }
+
+    public void assignOwnerRole(String userId) {
+        String url = "http://USER/api/user/" + userId + "/role?role=OWNER";
+        restTemplate.postForEntity(url, null, Void.class);
     }
 
     public Optional<Company> getCompany(Long id) {

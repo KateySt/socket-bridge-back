@@ -20,6 +20,25 @@ public class KeycloakService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final KeycloakProperties properties;
 
+    public ResponseEntity<?> assignUserRole(String userId, String roleName) {
+        String adminToken = getAdminAccessToken();
+        if (adminToken == null) return internalError("Failed to get admin token");
+
+        Role role;
+        try {
+            role = Role.valueOf(roleName.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return badRequest("Invalid role name: " + roleName);
+        }
+
+        boolean success = assignRoleToUser(adminToken, userId, role);
+        if (success) {
+            return ResponseEntity.ok("Role assigned successfully");
+        } else {
+            return internalError("Failed to assign role");
+        }
+    }
+
     public ResponseEntity<?> getAllUsers() {
         String adminToken = getAdminAccessToken();
         if (adminToken == null) return internalError("Failed to get admin token");

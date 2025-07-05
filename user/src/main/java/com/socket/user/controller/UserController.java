@@ -88,4 +88,11 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable String id) {
         return keycloakService.deleteUser(id);
     }
+
+    @PostMapping("/user/{id}/role")
+    public ResponseEntity<?> assignRoleToUser(
+            @PathVariable String id,
+            @RequestParam("role") String role) {
+        return keycloakService.assignUserRole(id, role);
+    }
 }
