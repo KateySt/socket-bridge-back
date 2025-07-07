@@ -1,6 +1,7 @@
 package com.socket.company.controller;
 
 import com.socket.company.dto.Company;
+import com.socket.company.dto.CompanyResponse;
 import com.socket.company.dto.CreateCompany;
 import com.socket.company.service.CompanyService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class CompanyController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Company> getCompany(@PathVariable Long id) {
+    public ResponseEntity<CompanyResponse> getCompany(@PathVariable Long id) {
         return companyService.getCompany(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

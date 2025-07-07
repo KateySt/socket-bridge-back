@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.AccessDeniedException;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -23,11 +22,14 @@ public class CompanyMembershipService {
     public CompanyMembership inviteUser(Long companyId, String ownerId, String userId) throws AccessDeniedException {
         validateOwner(companyId, ownerId);
 
-        var membership = membershipRepository.findByCompanyIdAndUserId(companyId, userId)
-                .orElse(new CompanyMembership(companyId, userId, MembershipStatus.INVITED));
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        CompanyMembership membership = membershipRepository
+                .findByCompanyIdAndUserId(companyId, userId)
+                .orElseGet(() -> new CompanyMembership(userId, MembershipStatus.INVITED, company));
 
         membership.setStatus(MembershipStatus.INVITED);
-        updateTimestamps(membership);
         return membershipRepository.save(membership);
     }
 
@@ -35,7 +37,6 @@ public class CompanyMembershipService {
         validateOwner(companyId, ownerId);
         CompanyMembership invitation = findMembership(companyId, userId, MembershipStatus.INVITED);
         invitation.setStatus(MembershipStatus.REVOKED);
-        updateTimestamps(invitation);
         return membershipRepository.save(invitation);
     }
 
@@ -43,7 +44,6 @@ public class CompanyMembershipService {
         validateOwner(companyId, ownerId);
         CompanyMembership request = findMembership(companyId, userId, MembershipStatus.REQUESTED);
         request.setStatus(MembershipStatus.ACCEPTED);
-        updateTimestamps(request);
         return membershipRepository.save(request);
     }
 
@@ -51,7 +51,6 @@ public class CompanyMembershipService {
         validateOwner(companyId, ownerId);
         CompanyMembership request = findMembership(companyId, userId, MembershipStatus.REQUESTED);
         request.setStatus(MembershipStatus.REJECTED);
-        updateTimestamps(request);
         return membershipRepository.save(request);
     }
 
@@ -59,44 +58,42 @@ public class CompanyMembershipService {
         validateOwner(companyId, ownerId);
         CompanyMembership member = findMembership(companyId, userId, MembershipStatus.ACCEPTED);
         member.setStatus(MembershipStatus.REMOVED);
-        updateTimestamps(member);
         return membershipRepository.save(member);
     }
 
     public CompanyMembership requestToJoin(Long companyId, String userId) {
-        var membership = membershipRepository.findByCompanyIdAndUserId(companyId, userId)
-                .orElse(new CompanyMembership(companyId, userId, MembershipStatus.REQUESTED));
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        CompanyMembership membership = membershipRepository
+                .findByCompanyIdAndUserId(companyId, userId)
+                .orElseGet(() -> new CompanyMembership(userId, MembershipStatus.REQUESTED, company));
 
         membership.setStatus(MembershipStatus.REQUESTED);
-        updateTimestamps(membership);
         return membershipRepository.save(membership);
     }
 
     public CompanyMembership cancelRequest(Long companyId, String userId) {
         CompanyMembership request = findMembership(companyId, userId, MembershipStatus.REQUESTED);
         request.setStatus(MembershipStatus.CANCELED);
-        updateTimestamps(request);
         return membershipRepository.save(request);
     }
 
     public CompanyMembership acceptInvitation(Long companyId, String userId) {
         CompanyMembership invitation = findMembership(companyId, userId, MembershipStatus.INVITED);
         invitation.setStatus(MembershipStatus.ACCEPTED);
-        updateTimestamps(invitation);
         return membershipRepository.save(invitation);
     }
 
     public CompanyMembership declineInvitation(Long companyId, String userId) {
         CompanyMembership invitation = findMembership(companyId, userId, MembershipStatus.INVITED);
         invitation.setStatus(MembershipStatus.DECLINED);
-        updateTimestamps(invitation);
         return membershipRepository.save(invitation);
     }
 
     public CompanyMembership leaveCompany(Long companyId, String userId) {
         CompanyMembership member = findMembership(companyId, userId, MembershipStatus.ACCEPTED);
         member.setStatus(MembershipStatus.LEFT);
-        updateTimestamps(member);
         return membershipRepository.save(member);
     }
 
@@ -155,6 +152,17 @@ public class CompanyMembershipService {
         return membershipRepository.findByCompanyIdAndRole(companyId, CompanyRole.ADMIN);
     }
 
+    public boolean isOwnerOrAdmin(Long companyId, String userId) {
+        var company = companyRepository.findById(companyId);
+        if (company.isPresent() && company.get().getOwnerId().equals(userId)) {
+            return true;
+        }
+
+        return membershipRepository.findByCompanyIdAndUserIdAndStatus(companyId, userId, MembershipStatus.ACCEPTED)
+                .map(m -> m.getRole() == CompanyRole.ADMIN)
+                .orElse(false);
+    }
+
     private void validateOwner(Long companyId, String ownerId) throws AccessDeniedException {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
@@ -166,13 +174,5 @@ public class CompanyMembershipService {
     private CompanyMembership findMembership(Long companyId, String userId, MembershipStatus expectedStatus) {
         return membershipRepository.findByCompanyIdAndUserIdAndStatus(companyId, userId, expectedStatus)
                 .orElseThrow(() -> new RuntimeException("Membership with status " + expectedStatus + " not found"));
-    }
-
-    private void updateTimestamps(CompanyMembership membership) {
-        LocalDateTime now = LocalDateTime.now();
-        if (membership.getCreatedAt() == null) {
-            membership.setCreatedAt(now);
-        }
-        membership.setUpdatedAt(now);
     }
 }

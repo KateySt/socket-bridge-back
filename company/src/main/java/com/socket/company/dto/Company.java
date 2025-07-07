@@ -1,15 +1,14 @@
 package com.socket.company.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import jakarta.persistence.Id;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "companies")
@@ -31,4 +30,7 @@ public class Company extends TimeStampedModel {
     private String ownerId;
 
     private boolean visible;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<CompanyMembership> memberships = new ArrayList<>();
 }

@@ -1,7 +1,6 @@
 package com.socket.company.service;
 
-import com.socket.company.dto.Company;
-import com.socket.company.dto.CreateCompany;
+import com.socket.company.dto.*;
 import com.socket.company.repo.CompanyRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -9,9 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.file.AccessDeniedException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +26,6 @@ public class CompanyService {
                 .ownerId(ownerId)
                 .description(company.description())
                 .visible(company.visible())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
         return companyRepository.save(createCompany);
     }
@@ -38,8 +35,22 @@ public class CompanyService {
         restTemplate.postForEntity(url, null, Void.class);
     }
 
-    public Optional<Company> getCompany(Long id) {
-        return companyRepository.findById(id);
+    public Optional<CompanyResponse> getCompany(Long id) {
+        return companyRepository.findById(id).map(company -> {
+            List<String> adminIds = company.getMemberships().stream()
+                    .filter(m -> m.getRole() == CompanyRole.ADMIN)
+                    .map(CompanyMembership::getUserId)
+                    .collect(Collectors.toList());
+
+            return CompanyResponse.builder()
+                    .id(company.getId())
+                    .name(company.getName())
+                    .description(company.getDescription())
+                    .visible(company.isVisible())
+                    .ownerId(company.getOwnerId())
+                    .adminIds(adminIds)
+                    .build();
+        });
     }
 
     public List<Company> listCompanies(String ownerId) {
@@ -57,7 +68,6 @@ public class CompanyService {
         existing.setName(updated.name());
         existing.setDescription(updated.description());
         existing.setVisible(updated.visible());
-        existing.setUpdatedAt(LocalDateTime.now());
 
         return companyRepository.save(existing);
     }

@@ -1,13 +1,12 @@
 package com.socket.company.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "company_memberships")
@@ -16,14 +15,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class CompanyMembership {
+public class CompanyMembership extends TimeStampedModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String userId;
-
-    private Long companyId;
 
     @Enumerated(EnumType.STRING)
     private MembershipStatus status;
@@ -31,15 +28,14 @@ public class CompanyMembership {
     @Enumerated(EnumType.STRING)
     private CompanyRole role = CompanyRole.MEMBER;
 
-    private LocalDateTime createdAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    @JsonIgnore
+    private Company company;
 
-    private LocalDateTime updatedAt;
-
-    public CompanyMembership(Long companyId, String userId, MembershipStatus status) {
-        this.companyId = companyId;
+    public CompanyMembership(String userId, MembershipStatus status, Company company) {
         this.userId = userId;
         this.status = status;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.company = company;
     }
 }

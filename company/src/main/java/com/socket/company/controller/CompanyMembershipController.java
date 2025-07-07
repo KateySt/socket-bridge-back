@@ -126,4 +126,11 @@ public class CompanyMembershipController {
                                         @RequestParam String ownerId) throws AccessDeniedException {
         return ResponseEntity.ok(service.getCompanyAdmins(companyId, ownerId));
     }
+
+    @GetMapping("/check")
+    public ResponseEntity<Boolean> isOwnerOrAdmin(
+            @RequestParam Long companyId,
+            @RequestParam String userId) {
+        return ResponseEntity.ok(service.isOwnerOrAdmin(companyId, userId));
+    }
 }
