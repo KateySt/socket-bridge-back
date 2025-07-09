@@ -1,4 +1,4 @@
-package com.socket.company.dto;
+package com.socket.company.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

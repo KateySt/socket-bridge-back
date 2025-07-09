@@ -1,4 +1,4 @@
-package com.socket.user.dto;
+package com.socket.user.enums;
 
 public enum Role {
     USER, ADMIN, OWNER

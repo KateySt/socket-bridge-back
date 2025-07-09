@@ -1,6 +1,6 @@
 package com.socket.company.controller;
 
-import com.socket.company.dto.CompanyMembership;
+import com.socket.company.entity.CompanyMembership;
 import com.socket.company.service.CompanyMembershipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -132,5 +132,10 @@ public class CompanyMembershipController {
             @RequestParam Long companyId,
             @RequestParam String userId) {
         return ResponseEntity.ok(service.isOwnerOrAdmin(companyId, userId));
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<String>> getCompanyUserIds(@RequestParam Long companyId) {
+        return ResponseEntity.ok(service.getCompanyUserIds(companyId));
     }
 }

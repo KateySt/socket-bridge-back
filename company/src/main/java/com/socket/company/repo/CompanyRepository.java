@@ -1,6 +1,6 @@
 package com.socket.company.repo;
 
-import com.socket.company.dto.Company;
+import com.socket.company.entity.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

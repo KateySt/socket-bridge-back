@@ -1,6 +1,6 @@
 package com.socket.quizzes.controller;
 
-import com.socket.quizzes.dto.Quiz;
+import com.socket.quizzes.model.Quiz;
 import com.socket.quizzes.dto.QuizRequest;
 import com.socket.quizzes.service.QuizService;
 import lombok.RequiredArgsConstructor;

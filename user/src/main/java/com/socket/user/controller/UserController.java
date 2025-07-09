@@ -3,7 +3,7 @@ package com.socket.user.controller;
 import com.socket.user.dto.LoginRequest;
 import com.socket.user.dto.RegisterRequest;
 import com.socket.user.dto.UpdateRequest;
-import com.socket.user.service.KeycloakService;
+import com.socket.user.service.impl.KeycloakServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +20,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final KeycloakService keycloakService;
+    private final KeycloakServiceImpl keycloakService;
 
     @Value("${frontend.home-url}")
     private String urlFront;

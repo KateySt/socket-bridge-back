@@ -21,6 +21,7 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeExchange(exchange -> exchange
+                        .pathMatchers("/quizzes/api/quiz-results/export").permitAll()
                         .pathMatchers("/user/api/register").permitAll()
                         .pathMatchers("/user/api/login").permitAll()
                         .pathMatchers("/user/api/exchange-code").permitAll()

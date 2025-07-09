@@ -1,4 +1,4 @@
-package com.socket.company.dto;
+package com.socket.company.enums;
 
 public enum CompanyRole {
     MEMBER,

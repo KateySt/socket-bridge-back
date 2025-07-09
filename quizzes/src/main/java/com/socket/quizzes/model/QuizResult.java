@@ -1,4 +1,4 @@
-package com.socket.quizzes.dto;
+package com.socket.quizzes.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,7 +33,7 @@ public class QuizResult {
     private int totalQuestions;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "quiz_id", insertable = false, updatable = false)
+    @JoinColumn(name = "quiz_id")
     @JsonIgnore
     private Quiz quiz;
 }

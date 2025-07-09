@@ -1,8 +1,8 @@
 package com.socket.company.repo;
 
-import com.socket.company.dto.CompanyMembership;
-import com.socket.company.dto.CompanyRole;
-import com.socket.company.dto.MembershipStatus;
+import com.socket.company.entity.CompanyMembership;
+import com.socket.company.enums.CompanyRole;
+import com.socket.company.enums.MembershipStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +20,6 @@ public interface CompanyMembershipRepository extends JpaRepository<CompanyMember
     Optional<CompanyMembership> findByCompanyIdAndUserIdAndStatus(Long companyId, String userId, MembershipStatus status);
 
     List<CompanyMembership> findByCompanyIdAndRole(Long companyId, CompanyRole role);
+
+    List<CompanyMembership> findByCompanyId(Long companyId);
 }

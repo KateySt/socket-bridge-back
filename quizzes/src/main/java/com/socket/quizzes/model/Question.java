@@ -1,4 +1,4 @@
-package com.socket.quizzes.dto;
+package com.socket.quizzes.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

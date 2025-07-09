@@ -1,6 +1,8 @@
-package com.socket.company.dto;
+package com.socket.company.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.socket.company.enums.CompanyRole;
+import com.socket.company.enums.MembershipStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

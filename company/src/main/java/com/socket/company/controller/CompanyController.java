@@ -1,6 +1,6 @@
 package com.socket.company.controller;
 
-import com.socket.company.dto.Company;
+import com.socket.company.entity.Company;
 import com.socket.company.dto.CompanyResponse;
 import com.socket.company.dto.CreateCompany;
 import com.socket.company.service.CompanyService;

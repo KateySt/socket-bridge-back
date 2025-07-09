@@ -1,6 +1,6 @@
 package com.socket.quizzes.repo;
 
-import com.socket.quizzes.dto.Quiz;
+import com.socket.quizzes.model.Quiz;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

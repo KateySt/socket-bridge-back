@@ -1,9 +1,9 @@
 package com.socket.company.service;
 
-import com.socket.company.dto.Company;
-import com.socket.company.dto.CompanyMembership;
-import com.socket.company.dto.CompanyRole;
-import com.socket.company.dto.MembershipStatus;
+import com.socket.company.entity.Company;
+import com.socket.company.entity.CompanyMembership;
+import com.socket.company.enums.CompanyRole;
+import com.socket.company.enums.MembershipStatus;
 import com.socket.company.repo.CompanyMembershipRepository;
 import com.socket.company.repo.CompanyRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +18,13 @@ public class CompanyMembershipService {
 
     private final CompanyMembershipRepository membershipRepository;
     private final CompanyRepository companyRepository;
+
+    public List<String> getCompanyUserIds(Long companyId) {
+        return membershipRepository.findByCompanyId(companyId)
+                .stream()
+                .map(CompanyMembership::getUserId)
+                .toList();
+    }
 
     public CompanyMembership inviteUser(Long companyId, String ownerId, String userId) throws AccessDeniedException {
         validateOwner(companyId, ownerId);
