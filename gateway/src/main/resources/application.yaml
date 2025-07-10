@@ -23,6 +23,20 @@ spring:
                 - Path=/api/**
               filters:
                 - StripPrefix=1
+
+            - id: quizzes
+              uri: lb://QUIZZES
+              predicates:
+                - Path=/api/**
+              filters:
+                - StripPrefix=1
+
+            - id: notification
+              uri: lb://NOTIFICATION
+              predicates:
+                - Path=/api/**
+              filters:
+                - StripPrefix=1
   security:
     oauth2:
       resourceserver:

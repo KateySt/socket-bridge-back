@@ -1,10 +1,13 @@
 package com.socket.notification.config;
 
-import org.springframework.boot.rsocket.server.RSocketServerCustomizer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
@@ -19,18 +22,13 @@ public class RSocketConfig {
         return handler;
     }
 
-    @Bean
-    public RSocketStrategies rsocketStrategies() {
-        return RSocketStrategies.builder()
-                .build();
-    }
 
     @Bean
-    public RSocketServerCustomizer rSocketServerCustomizer() {
-        return rSocketServer -> rSocketServer
-                .interceptors(interceptorRegistry -> {
-                    // Можно добавить interceptors для логирования, аутентификации и т.д.
-                });
+    public RSocketStrategies rSocketStrategies(ObjectMapper objectMapper) {
+        return RSocketStrategies.builder()
+                .encoders(encoders -> encoders.add(new Jackson2JsonEncoder(objectMapper, MimeTypeUtils.APPLICATION_JSON)))
+                .decoders(decoders -> decoders.add(new Jackson2JsonDecoder(objectMapper, MimeTypeUtils.APPLICATION_JSON)))
+                .build();
     }
 
     @Bean
@@ -46,4 +44,5 @@ public class RSocketConfig {
 
         return new CorsWebFilter(source);
     }
+
 }

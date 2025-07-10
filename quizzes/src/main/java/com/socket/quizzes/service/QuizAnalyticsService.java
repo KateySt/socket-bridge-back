@@ -1,98 +1,19 @@
 package com.socket.quizzes.service;
 
-import com.socket.quizzes.repo.QuizResultRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import java.nio.file.AccessDeniedException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@Service
-@RequiredArgsConstructor
-public class QuizAnalyticsService {
+public interface QuizAnalyticsService {
+    double getAverageScoreForCompany(Long companyId);
 
-    private final QuizResultRepository resultRepository;
-    private final RestTemplate restTemplate;
+    List<Map<String, Object>> getLastCompletionsByQuizForCompany(Long companyId, String userId) throws AccessDeniedException;
 
-    public double getAverageScoreForCompany(Long companyId) {
-        Integer correct = resultRepository.getTotalCorrectByCompany(companyId);
-        Integer total = resultRepository.getTotalQuestionsByCompany(companyId);
+    List<Map<String, Object>> getAverageScoresByQuizOverTime();
 
-        if (correct == null || total == null || total == 0) {
-            return 0;
-        }
+    List<Map<String, Object>> getAverageScoresByUserOverTime();
 
-        return Math.round((correct * 10.0 / total) * 10.0) / 10.0;
-    }
+    List<Map<String, Object>> getUserQuizAverageScoreOverTime(String userId);
 
-    public List<Map<String, Object>> getLastCompletionsByQuizForCompany(Long companyId, String userId) throws AccessDeniedException {
-        validatePermissions(companyId, userId);
-
-        List<Object[]> raw = resultRepository.getLastCompletionForQuizzesByCompany(companyId);
-
-        return raw.stream().map(row -> Map.of(
-               "quizId", row[0],
-               "quizTitle", row[1],
-               "lastCompletedAt", row[2]
-       )).toList();
-    }
-
-    public List<Map<String, Object>> getAverageScoresByQuizOverTime() {
-        List<Object[]> raw = resultRepository.getAverageScoreByQuizGrouped();
-
-        return raw.stream().map(row -> Map.of(
-                "quizId", row[0],
-                "quizTitle", row[1],
-                "date", row[2],
-                "avgScore", row[3]
-        )).toList();
-    }
-
-    public List<Map<String, Object>> getAverageScoresByUserOverTime() {
-        List<Object[]> raw = resultRepository.getAverageScoreByUserGrouped();
-
-        return raw.stream().map(row -> Map.of(
-                "userId", row[0],
-                "date", row[1],
-                "avgScore", row[2]
-        )).toList();
-    }
-
-    public List<Map<String, Object>> getUserQuizAverageScoreOverTime(String userId) {
-        List<Object[]> raw = resultRepository.getUserQuizScoreGrouped(userId);
-
-        return raw.stream().map(row -> {
-            System.out.println("Row: " + Arrays.toString(row));
-            return Map.of(
-                    "quizId", row[0],
-                    "quizTitle", row[1],
-                    "date", row[2],
-                    "avgScore", row[3]
-            );
-        }).toList();
-    }
-
-    public List<Map<String, Object>> getCompanyUsersLastTests(Long companyId, String userId) throws AccessDeniedException {
-        validatePermissions(companyId, userId);
-
-        List<Object[]> raw = resultRepository.getLastTestPerUserByCompany(companyId);
-        return raw.stream().map(row -> {
-            System.out.println("Row: " + Arrays.toString(row));
-            return Map.of(
-                    "userId", row[0],
-                    "lastCompletedAt", row[1]
-            );
-        }).toList();
-    }
-
-    private void validatePermissions(Long companyId, String userId) throws AccessDeniedException {
-        String url = "http://COMPANY/api/memberships/check?userId=" + userId + "&companyId=" + companyId;
-        Boolean hasPermission = restTemplate.getForObject(url, Boolean.class);
-        if (!Boolean.TRUE.equals(hasPermission)) {
-            throw new AccessDeniedException("Access denied");
-        }
-    }
+    List<Map<String, Object>> getCompanyUsersLastTests(Long companyId, String userId) throws AccessDeniedException;
 }
