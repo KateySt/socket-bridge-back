@@ -2,9 +2,9 @@ package com.socket.quizzes.service;
 
 import com.socket.quizzes.dto.QuizRequest;
 import com.socket.quizzes.model.Quiz;
+import org.springframework.data.domain.Page;
 
 import java.nio.file.AccessDeniedException;
-import java.util.List;
 
 public interface QuizService {
 
@@ -14,5 +14,5 @@ public interface QuizService {
 
     void deleteQuiz(Long id, String userId) throws AccessDeniedException;
 
-    List<Quiz> findAllByCompany(Long companyId);
+    Page<Quiz> findAllByCompany(Long companyId, int page, int size);
 }

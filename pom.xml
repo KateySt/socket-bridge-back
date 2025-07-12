@@ -28,6 +28,7 @@
         <module>company</module>
         <module>quizzes</module>
         <module>notification</module>
+        <module>common-errors</module>
     </modules>
     <scm>
         <connection/>

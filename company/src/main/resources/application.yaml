@@ -1,6 +1,17 @@
 spring:
   application:
     name: company
+  data:
+    elasticsearch:
+      webclient:
+        max-in-memory-size: "1MB"
+      restclient:
+        sniffer:
+          interval: "10m"
+          delay-after-failure: "30s"
+      client:
+        reactive: false
+      uris: http://localhost:9200
   datasource:
     username: root
     url: jdbc:postgresql://localhost:5432/company

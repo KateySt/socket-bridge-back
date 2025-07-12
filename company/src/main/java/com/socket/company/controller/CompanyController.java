@@ -5,6 +5,7 @@ import com.socket.company.dto.CompanyResponse;
 import com.socket.company.dto.CreateCompany;
 import com.socket.company.service.CompanyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,8 +34,11 @@ public class CompanyController {
     }
 
     @GetMapping
-    public List<Company> listCompanies(@RequestHeader("X-User-Id") String ownerId) {
-        return companyService.listCompanies(ownerId);
+    public Page<Company> listCompanies(
+            @RequestParam(defaultValue = "") String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return companyService.listCompanies(query, page, size);
     }
 
     @PutMapping("/{id}")

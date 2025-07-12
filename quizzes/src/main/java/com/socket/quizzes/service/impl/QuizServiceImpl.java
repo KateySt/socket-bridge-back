@@ -9,6 +9,10 @@ import com.socket.quizzes.model.Quiz;
 import com.socket.quizzes.repo.QuizRepository;
 import com.socket.quizzes.service.QuizService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -76,8 +80,9 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    public List<Quiz> findAllByCompany(Long companyId) {
-        return quizRepository.findByCompanyId(companyId);
+    public Page<Quiz> findAllByCompany(Long companyId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("title").descending());
+        return quizRepository.findByCompanyId(companyId, pageable);
     }
 
     private void validatePermissions(Long companyId, String userId) throws AccessDeniedException {
@@ -96,7 +101,7 @@ public class QuizServiceImpl implements QuizService {
             for (String userId : userIds) {
                 NotificationRequest notification = new NotificationRequest(
                         userId,
-                        "New quiz available: " + quizTitle
+                        quizTitle
                 );
 
                 restTemplate.postForObject("http://NOTIFICATION/api/notifications", notification, Void.class);

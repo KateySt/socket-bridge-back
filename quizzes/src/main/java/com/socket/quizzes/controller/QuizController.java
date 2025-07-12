@@ -4,6 +4,7 @@ import com.socket.quizzes.model.Quiz;
 import com.socket.quizzes.dto.QuizRequest;
 import com.socket.quizzes.service.QuizService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +38,11 @@ public class QuizController {
     }
 
     @GetMapping("/company/{companyId}")
-    public ResponseEntity<List<Quiz>> listByCompany(@PathVariable Long companyId) {
-        return ResponseEntity.ok(quizService.findAllByCompany(companyId));
+    public ResponseEntity<Page<Quiz>> listByCompany(
+            @PathVariable Long companyId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(quizService.findAllByCompany(companyId, page, size));
     }
 }

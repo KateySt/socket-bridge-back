@@ -1,185 +1,49 @@
 package com.socket.company.service;
 
-import com.socket.company.entity.Company;
 import com.socket.company.entity.CompanyMembership;
-import com.socket.company.enums.CompanyRole;
-import com.socket.company.enums.MembershipStatus;
-import com.socket.company.repo.CompanyMembershipRepository;
-import com.socket.company.repo.CompanyRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class CompanyMembershipService {
+public interface CompanyMembershipService {
 
-    private final CompanyMembershipRepository membershipRepository;
-    private final CompanyRepository companyRepository;
+    List<String> getCompanyUserIds(Long companyId);
 
-    public List<String> getCompanyUserIds(Long companyId) {
-        return membershipRepository.findByCompanyId(companyId)
-                .stream()
-                .map(CompanyMembership::getUserId)
-                .toList();
-    }
+    CompanyMembership inviteUser(Long companyId, String ownerId, String userId) throws AccessDeniedException;
 
-    public CompanyMembership inviteUser(Long companyId, String ownerId, String userId) throws AccessDeniedException {
-        validateOwner(companyId, ownerId);
+    CompanyMembership revokeInvitation(Long companyId, String ownerId, String userId) throws AccessDeniedException;
 
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+    CompanyMembership approveRequest(Long companyId, String ownerId, String userId) throws AccessDeniedException;
 
-        CompanyMembership membership = membershipRepository
-                .findByCompanyIdAndUserId(companyId, userId)
-                .orElseGet(() -> new CompanyMembership(userId, MembershipStatus.INVITED, company));
+    CompanyMembership rejectRequest(Long companyId, String ownerId, String userId) throws AccessDeniedException;
 
-        membership.setStatus(MembershipStatus.INVITED);
-        return membershipRepository.save(membership);
-    }
+    CompanyMembership removeUser(Long companyId, String ownerId, String userId) throws AccessDeniedException;
 
-    public CompanyMembership revokeInvitation(Long companyId, String ownerId, String userId) throws AccessDeniedException {
-        validateOwner(companyId, ownerId);
-        CompanyMembership invitation = findMembership(companyId, userId, MembershipStatus.INVITED);
-        invitation.setStatus(MembershipStatus.REVOKED);
-        return membershipRepository.save(invitation);
-    }
+    CompanyMembership requestToJoin(Long companyId, String userId);
 
-    public CompanyMembership approveRequest(Long companyId, String ownerId, String userId) throws AccessDeniedException {
-        validateOwner(companyId, ownerId);
-        CompanyMembership request = findMembership(companyId, userId, MembershipStatus.REQUESTED);
-        request.setStatus(MembershipStatus.ACCEPTED);
-        return membershipRepository.save(request);
-    }
+    CompanyMembership cancelRequest(Long companyId, String userId);
 
-    public CompanyMembership rejectRequest(Long companyId, String ownerId, String userId) throws AccessDeniedException {
-        validateOwner(companyId, ownerId);
-        CompanyMembership request = findMembership(companyId, userId, MembershipStatus.REQUESTED);
-        request.setStatus(MembershipStatus.REJECTED);
-        return membershipRepository.save(request);
-    }
+    CompanyMembership acceptInvitation(Long companyId, String userId);
 
-    public CompanyMembership removeUser(Long companyId, String ownerId, String userId) throws AccessDeniedException {
-        validateOwner(companyId, ownerId);
-        CompanyMembership member = findMembership(companyId, userId, MembershipStatus.ACCEPTED);
-        member.setStatus(MembershipStatus.REMOVED);
-        return membershipRepository.save(member);
-    }
+    CompanyMembership declineInvitation(Long companyId, String userId);
 
-    public CompanyMembership requestToJoin(Long companyId, String userId) {
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+    CompanyMembership leaveCompany(Long companyId, String userId);
 
-        CompanyMembership membership = membershipRepository
-                .findByCompanyIdAndUserId(companyId, userId)
-                .orElseGet(() -> new CompanyMembership(userId, MembershipStatus.REQUESTED, company));
+    List<CompanyMembership> getUserRequests(String userId);
 
-        membership.setStatus(MembershipStatus.REQUESTED);
-        return membershipRepository.save(membership);
-    }
+    List<CompanyMembership> getUserInvitations(String userId);
 
-    public CompanyMembership cancelRequest(Long companyId, String userId) {
-        CompanyMembership request = findMembership(companyId, userId, MembershipStatus.REQUESTED);
-        request.setStatus(MembershipStatus.CANCELED);
-        return membershipRepository.save(request);
-    }
+    List<CompanyMembership> getCompanyRequests(Long companyId, String ownerId) throws AccessDeniedException;
 
-    public CompanyMembership acceptInvitation(Long companyId, String userId) {
-        CompanyMembership invitation = findMembership(companyId, userId, MembershipStatus.INVITED);
-        invitation.setStatus(MembershipStatus.ACCEPTED);
-        return membershipRepository.save(invitation);
-    }
+    List<CompanyMembership> getCompanyInvitations(Long companyId, String ownerId) throws AccessDeniedException;
 
-    public CompanyMembership declineInvitation(Long companyId, String userId) {
-        CompanyMembership invitation = findMembership(companyId, userId, MembershipStatus.INVITED);
-        invitation.setStatus(MembershipStatus.DECLINED);
-        return membershipRepository.save(invitation);
-    }
+    List<CompanyMembership> getCompanyMembers(Long companyId);
 
-    public CompanyMembership leaveCompany(Long companyId, String userId) {
-        CompanyMembership member = findMembership(companyId, userId, MembershipStatus.ACCEPTED);
-        member.setStatus(MembershipStatus.LEFT);
-        return membershipRepository.save(member);
-    }
+    CompanyMembership appointAdmin(Long companyId, String ownerId, String userId) throws AccessDeniedException;
 
-    public List<CompanyMembership> getUserRequests(String userId) {
-        return membershipRepository.findByUserIdAndStatus(userId, MembershipStatus.REQUESTED);
-    }
+    CompanyMembership removeAdmin(Long companyId, String ownerId, String userId) throws AccessDeniedException;
 
-    public List<CompanyMembership> getUserInvitations(String userId) {
-        return membershipRepository.findByUserIdAndStatus(userId, MembershipStatus.INVITED);
-    }
+    boolean isOwnerOrAdmin(Long companyId, String userId);
 
-    public List<CompanyMembership> getCompanyRequests(Long companyId, String ownerId) throws AccessDeniedException {
-        validateOwner(companyId, ownerId);
-        return membershipRepository.findByCompanyIdAndStatus(companyId, MembershipStatus.REQUESTED);
-    }
-
-    public List<CompanyMembership> getCompanyInvitations(Long companyId, String ownerId) throws AccessDeniedException {
-        validateOwner(companyId, ownerId);
-        return membershipRepository.findByCompanyIdAndStatus(companyId, MembershipStatus.INVITED);
-    }
-
-    public List<CompanyMembership> getCompanyMembers(Long companyId) {
-        return membershipRepository.findByCompanyIdAndStatus(companyId, MembershipStatus.ACCEPTED);
-    }
-
-    public CompanyMembership appointAdmin(Long companyId, String ownerId, String userId) throws AccessDeniedException {
-        validateOwner(companyId, ownerId);
-
-        CompanyMembership member = membershipRepository.findByCompanyIdAndUserIdAndStatus(companyId, userId, MembershipStatus.ACCEPTED)
-                .orElseThrow(() -> new RuntimeException("User is not an accepted member"));
-
-        if (member.getRole() == CompanyRole.ADMIN) {
-            throw new IllegalStateException("User is already an admin");
-        }
-
-        member.setRole(CompanyRole.ADMIN);
-        return membershipRepository.save(member);
-    }
-
-    public CompanyMembership removeAdmin(Long companyId, String ownerId, String userId) throws AccessDeniedException {
-        validateOwner(companyId, ownerId);
-
-        CompanyMembership member = membershipRepository.findByCompanyIdAndUserIdAndStatus(companyId, userId, MembershipStatus.ACCEPTED)
-                .orElseThrow(() -> new RuntimeException("User is not an accepted member"));
-
-        if (member.getRole() != CompanyRole.ADMIN) {
-            throw new IllegalStateException("User is not an admin");
-        }
-
-        member.setRole(CompanyRole.MEMBER);
-        return membershipRepository.save(member);
-    }
-
-    public List<CompanyMembership> getCompanyAdmins(Long companyId, String ownerId) throws AccessDeniedException {
-        validateOwner(companyId, ownerId);
-        return membershipRepository.findByCompanyIdAndRole(companyId, CompanyRole.ADMIN);
-    }
-
-    public boolean isOwnerOrAdmin(Long companyId, String userId) {
-        var company = companyRepository.findById(companyId);
-        if (company.isPresent() && company.get().getOwnerId().equals(userId)) {
-            return true;
-        }
-
-        return membershipRepository.findByCompanyIdAndUserIdAndStatus(companyId, userId, MembershipStatus.ACCEPTED)
-                .map(m -> m.getRole() == CompanyRole.ADMIN)
-                .orElse(false);
-    }
-
-    private void validateOwner(Long companyId, String ownerId) throws AccessDeniedException {
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-        if (!company.getOwnerId().equals(ownerId)) {
-            throw new AccessDeniedException("You are not the owner of this company");
-        }
-    }
-
-    private CompanyMembership findMembership(Long companyId, String userId, MembershipStatus expectedStatus) {
-        return membershipRepository.findByCompanyIdAndUserIdAndStatus(companyId, userId, expectedStatus)
-                .orElseThrow(() -> new RuntimeException("Membership with status " + expectedStatus + " not found"));
-    }
+    List<CompanyMembership> getCompanyAdmins(Long companyId, String ownerId) throws AccessDeniedException;
 }
