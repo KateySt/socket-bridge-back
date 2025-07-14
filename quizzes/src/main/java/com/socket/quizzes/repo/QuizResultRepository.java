@@ -1,5 +1,6 @@
 package com.socket.quizzes.repo;
 
+import com.socket.quizzes.model.Quiz;
 import com.socket.quizzes.model.QuizResult;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -7,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface QuizResultRepository extends JpaRepository<QuizResult, Long> {
@@ -15,6 +17,8 @@ public interface QuizResultRepository extends JpaRepository<QuizResult, Long> {
 
     @Query("SELECT SUM(r.totalQuestions) FROM QuizResult r WHERE r.userId = :userId AND r.companyId = :companyId")
     Integer getTotalQuestionsByUserAndCompany(String userId, Long companyId);
+
+    Optional<QuizResult> findFirstByUserIdAndQuizOrderByCompletedAtDesc(String userId, Quiz quiz);
 
     List<QuizResult> findAllByUserId(String userId);
 

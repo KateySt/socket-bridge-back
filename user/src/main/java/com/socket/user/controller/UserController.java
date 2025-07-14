@@ -4,6 +4,7 @@ import com.socket.user.dto.LoginRequest;
 import com.socket.user.dto.RegisterRequest;
 import com.socket.user.dto.UpdateRequest;
 import com.socket.user.service.KeycloakService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -64,12 +65,12 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request) {
         return keycloakService.registerAndLogin(request);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         return keycloakService.login(request);
     }
 
@@ -80,7 +81,7 @@ public class UserController {
     }
 
     @PutMapping("/user/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable String id, @RequestBody UpdateRequest update) {
+    public ResponseEntity<?> updateUser(@Valid @PathVariable String id, @RequestBody UpdateRequest update) {
         return keycloakService.updateUser(id, update);
     }
 

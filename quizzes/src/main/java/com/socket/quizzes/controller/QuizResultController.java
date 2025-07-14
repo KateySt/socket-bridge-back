@@ -5,6 +5,7 @@ import com.socket.quizzes.dto.QuizAttemptRequest;
 import com.socket.quizzes.dto.QuizAttemptResponse;
 import com.socket.quizzes.model.QuizResult;
 import com.socket.quizzes.service.QuizResultService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,7 +23,7 @@ public class QuizResultController {
     private final QuizResultService quizResultService;
 
     @PostMapping("/attempt")
-    public ResponseEntity<QuizAttemptResponse> submitAttempt(@RequestBody QuizAttemptRequest request,
+    public ResponseEntity<QuizAttemptResponse> submitAttempt(@Valid @RequestBody QuizAttemptRequest request,
                                                              @RequestHeader("X-User-Id") String userId) {
         return ResponseEntity.ok(quizResultService.processAttempt(request, userId));
     }

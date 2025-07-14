@@ -4,6 +4,7 @@ import com.socket.company.entity.Company;
 import com.socket.company.dto.CompanyResponse;
 import com.socket.company.dto.CreateCompany;
 import com.socket.company.service.CompanyService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -11,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/companies")
@@ -21,7 +21,7 @@ public class CompanyController {
     private final CompanyService companyService;
 
     @PostMapping
-    public ResponseEntity<Company> createCompany(@RequestBody CreateCompany company, @RequestHeader("X-User-Id") String userId) {
+    public ResponseEntity<Company> createCompany(@Valid @RequestBody CreateCompany company, @RequestHeader("X-User-Id") String userId) {
         Company created = companyService.createCompany(company, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -42,7 +42,7 @@ public class CompanyController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Company> updateCompany(@PathVariable Long id, @RequestBody CreateCompany updated, @RequestHeader("X-User-Id") String userId) {
+    public ResponseEntity<Company> updateCompany(@Valid @PathVariable Long id, @RequestBody CreateCompany updated, @RequestHeader("X-User-Id") String userId) {
         try {
             Company company = companyService.updateCompany(id, updated, userId);
             return ResponseEntity.ok(company);

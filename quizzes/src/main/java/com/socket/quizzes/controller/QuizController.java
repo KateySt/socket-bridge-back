@@ -3,6 +3,7 @@ package com.socket.quizzes.controller;
 import com.socket.quizzes.model.Quiz;
 import com.socket.quizzes.dto.QuizRequest;
 import com.socket.quizzes.service.QuizService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class QuizController {
     private final QuizService quizService;
 
     @PostMapping
-    public ResponseEntity<Quiz> create(@RequestBody QuizRequest request,
+    public ResponseEntity<Quiz> create(@Valid @RequestBody QuizRequest request,
                                        @RequestHeader("X-User-Id") String userId) throws AccessDeniedException {
         return ResponseEntity.ok(quizService.createQuiz(request, userId));
     }
