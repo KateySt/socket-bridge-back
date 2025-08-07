@@ -59,11 +59,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>org.mapstruct</groupId>
-                <artifactId>mapstruct-processor</artifactId>
-                <version>${org.mapstruct.processor}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
